@@ -3,6 +3,7 @@ const router = express.Router();
 const addPageHTML = require('../views/addPage.js');
 const layout = require('../views/layout.js');
 const { db, Page, User } = require('../models/index.js');
+const wikiPage = require('../views/wikipage.js')
 
 //sending default layout
 router.get('/', (req, res, next) => {
@@ -44,8 +45,19 @@ router.get('/add', (req, res, next) => {
   res.send(addPageHTML());
 })
 
-router.get('/:slug', (req, res, next) => {
-  res.send(`/${req.params.slug}`)
+router.get('/:slug', async(req, res, next) => {
+  try {
+    const page = await Page.findOne({
+      where: {
+        slug: req.params.slug
+      }
+    });
+    const wikiPageHTML =  wikiPage(res.json(page))
+    res.send(wikiPageHTML)
+
+  } catch (error){
+    next(error)
+  }
 })
 
 module.exports = router;
