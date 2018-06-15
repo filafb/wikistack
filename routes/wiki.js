@@ -52,7 +52,7 @@ router.get('/:slug', async(req, res, next) => {
         slug: req.params.slug
       }
     });
-    const wikiPageHTML =  wikiPage(res.json(page))
+    const wikiPageHTML =  wikiPage(page)
     res.send(wikiPageHTML)
 
   } catch (error){
