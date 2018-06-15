@@ -23,7 +23,11 @@ const Page = db.define('page', {
   status: {
     type: Sequelize.ENUM('open', 'closed')
   }
-})
+}, { hooks: {
+    beforeValidate: (page) => {
+      page.slug = page.title.replace(/\s+/g, '_').replace(/\W/g, '');
+    }
+}})
 
 // Page.sync()
 

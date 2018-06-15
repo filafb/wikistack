@@ -15,30 +15,37 @@ router.post('/', async (req, res, next) => {
   const title = req.body.title;
   const content = req.body.content;
   const status = req.body.status;
-  const slug = title.replace(" ", "-")
 
   const page = new Page({
     title: title,
     content: content,
-    status: status,
-    slug: slug
+    status: status
   })
 
   try {
     await page.save();
+    const log = await Page.findAll({
+      where: {
+        title: title,
+        content: content,
+        status: status
+      }
+    });
+    console.log('this is what were trying to log', log[0].dataValues);
     res.redirect('/');
   }
-  catch(error) {
+  catch (error) {
     next(error)
   }
   // res.json(req.body); // to see how the body is returned
 })
 
-
-
 router.get('/add', (req, res, next) => {
   res.send(addPageHTML());
 })
 
+router.get('/:slug', (req, res, next) => {
+  res.send(`/${req.params.slug}`)
+})
 
 module.exports = router;
