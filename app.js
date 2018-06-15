@@ -1,5 +1,5 @@
 const express = require('express');
-const { db } = require('./models');
+const { db, Page, User } = require('./models');
 // const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const app = express();
@@ -19,6 +19,12 @@ app.get('/', (req, res, next) => {
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
-  console.log(`App listening in port ${PORT}`);
-});
+const dbSync = async () =>{
+  await db.sync({force:true}); // // this drops all tables then recreates them based on our JS definitions // used for dev mode, not for production
+  app.listen(PORT, () => {
+    console.log(`App listening in port ${PORT}`);
+  });
+}
+
+dbSync();
+
