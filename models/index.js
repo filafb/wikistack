@@ -23,13 +23,13 @@ const Page = db.define('page', {
   status: {
     type: Sequelize.ENUM('open', 'closed')
   }
-}, { hooks: {
+},
+{ hooks: {
     beforeValidate: (page) => {
       page.slug = page.title.replace(/\s+/g, '_').replace(/\W/g, '');
     }
 }})
 
-// Page.sync()
 
 const User = db.define('user', {
   name: {
@@ -40,12 +40,14 @@ const User = db.define('user', {
     type: Sequelize.STRING,
     allowNull: false,
     unique: true, // it's not in the original solution
-    validate: {
-      isEmal: true
-    }
+    // validate: {
+    //   isEmal: true
+    // }
   }
 })
 
+// Page.sync() // why we don't need it?
 // User.sync()
+Page.belongsTo(User, {as: 'author'} ) // means that a page has one user associetad with it
 
 module.exports = {db, Page, User}

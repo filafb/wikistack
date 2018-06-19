@@ -1,39 +1,54 @@
 const express = require('express');
 const router = express.Router();
 const addPageHTML = require('../views/addPage.js');
-const layout = require('../views/layout.js');
+const main = require('../views/main.js');
 const { db, Page, User } = require('../models/index.js');
 const wikiPage = require('../views/wikipage.js')
 
 //sending default layout
-router.get('/', (req, res, next) => {
-  res.send(layout());
+router.get('/', async (req, res, next) => {
+  const pages = await Page.findAll()
+  // console.log(pages[0].slug)
+  res.send(main(pages));
 })
 
 router.post('/', async (req, res, next) => {
+  try {
   const name = req.body.name;
   const email = req.body.email;
   const title = req.body.title;
   const content = req.body.content;
   const status = req.body.status;
+    //.findOrCreate returns an array with [instance (an obj), true or false, based on there was or not the value in the database]
+  let [user, wasCreated] = await User.findOrCreate(
+    {where: {
+      name: `${name}`,
+      email: `${email}`
+    }
+  })
+
+  await user.save();
 
   const page = new Page({
     title: title,
     content: content,
-    status: status
+    status: status,
   })
 
-  try {
     await page.save();
-    const log = await Page.findAll({
-      where: {
-        title: title,
-        content: content,
-        status: status
-      }
-    });
-    console.log('this is what were trying to log', log[0].dataValues);
-    res.redirect('/');
+
+    page.setAuthor(user);
+    //to see in terminal the new added post
+    console.log(`new Input:
+    postId: ${page.id},
+    userId: ${user.id},
+    title: ${page.title},
+    user: ${user.name},
+    e-mail: ${user.email},
+    content: ${page.content},
+    status: ${page.status},
+    created: ${page.createdAt}`);
+    res.redirect(`/wiki/${page.slug}`);
   }
   catch (error) {
     next(error)
@@ -52,7 +67,8 @@ router.get('/:slug', async(req, res, next) => {
         slug: req.params.slug
       }
     });
-    const wikiPageHTML =  wikiPage(page)
+    const user = await page.getAuthor();
+    const wikiPageHTML =  wikiPage(page, user)
     res.send(wikiPageHTML)
 
   } catch (error){
